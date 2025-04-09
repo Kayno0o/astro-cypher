@@ -7,8 +7,8 @@ import Layout from '../layouts/Layout.astro'
     <div class="flex justify-between items-center">
       <h1 class="h1">Monoalphabetic</h1>
       <button id="btn-share" type="button" class="btn">
-        <div class="i-material-symbols:content-copy"></div>
-        <div class="i-material-symbols:done-all" hidden></div>
+        <div class="i-material-symbols:content-copy" />
+        <div class="i-material-symbols:done-all" hidden />
       </button>
     </div>
 
@@ -25,16 +25,15 @@ import Layout from '../layouts/Layout.astro'
     <div class="grid xl:grid-cols-2 gap-8">
       <div class="form-input card">
         <label class="label" for="textarea-input">Input</label>
-        <textarea id="textarea-input" class="input text-sm autoresize font-mono"></textarea>
+        <textarea id="textarea-input" class="input text-sm autoresize font-mono" />
       </div>
       <div class="form-output card">
         <label class="label" for="textarea-output">Output</label>
-        <div id="textarea-output" class="input text-sm autoresize font-mono min-h-13 whitespace-pre-wrap"></div>
+        <div id="textarea-output" class="input text-sm autoresize font-mono min-h-13 whitespace-pre-wrap" />
       </div>
     </div>
 
-    <div id="char-input-wrapper" class="flex flex-wrap gap-4 card">
-    </div>
+    <div id="char-input-wrapper" class="flex flex-wrap gap-4 card" />
   </div>
 
   <template id="char-input">
@@ -43,7 +42,7 @@ import Layout from '../layouts/Layout.astro'
         <p class="text-lg label font-bold text-primary">[char]</p>
         <p class="text-slate">×<span data-replace="count">[count]</span></p>
       </div>
-      <input class="input w-16" data-maxlength="1" autocomplete="off">
+      <input class="input w-16" data-maxlength="1" autocomplete="off" >
     </div>
   </template>
 </Layout>
