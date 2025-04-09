@@ -22,6 +22,9 @@ export default defineConfig({
   transformers: [
     transformerVariantGroup(),
   ],
+  safelist: [
+    'text-red-7',
+  ],
   shortcuts: [
     {
       'content-wrapper': 'container px-6 my-8 mx-auto',
