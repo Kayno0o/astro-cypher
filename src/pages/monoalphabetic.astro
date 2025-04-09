@@ -4,7 +4,13 @@ import Layout from '../layouts/Layout.astro'
 ---
 <Layout title="Monoalphabetic">
   <div class="grid gap-10">
-    <h1 class="h1">Monoalphabetic</h1>
+    <div class="flex justify-between items-center">
+      <h1 class="h1">Monoalphabetic</h1>
+      <button id="btn-share" type="button" class="btn">
+        <div class="i-material-symbols:content-copy"></div>
+        <div class="i-material-symbols:done-all" hidden></div>
+      </button>
+    </div>
 
     <div class="grid card gap-4">
       <h2 class="h2">Presets</h2>
@@ -114,7 +120,7 @@ const outputEl = document.getElementById('textarea-output') as HTMLTextAreaEleme
 
 const inputEl = document.getElementById('textarea-input') as HTMLTextAreaElement
 inputEl.addEventListener('input', () => {
-  const chars = inputEl.value.split('').filter(fChar => fChar !== '\n' && fChar !== ' ')
+  const chars = inputEl.value.split('').filter(fChar => fChar !== '\n' && fChar !== ' ' && fChar !== ',' && fChar !== ';')
   const uniqueChars = [...new Set(chars)].sort()
 
   const existingEls = wrapper.querySelectorAll<HTMLElement>('[data-char]')
@@ -191,6 +197,8 @@ function updateOutput() {
 
   outputEl.innerHTML = output
   outputEl.dispatchEvent(new Event('input'))
+
+  saveStateToURL()
 }
 
 const textareas = document.querySelectorAll<HTMLTextAreaElement>('textarea.autoresize')
@@ -200,7 +208,8 @@ for (const textarea of textareas) {
     textarea.style.height = `${textarea.scrollHeight}px`
   })
 
-  textarea.dispatchEvent(new Event('input'))
+  textarea.style.height = 'auto'
+  textarea.style.height = `${textarea.scrollHeight}px`
 }
 
 const presetButtons = document.querySelectorAll<HTMLButtonElement>('button.btn-preset')
@@ -218,4 +227,98 @@ for (const btn of presetButtons) {
     inputEl.dispatchEvent(new Event('input'))
   })
 }
+
+const shareBtn = document.getElementById('btn-share') as HTMLButtonElement
+shareBtn.addEventListener('click', async () => {
+  saveStateToURL()
+  const children = shareBtn.children
+  try {
+    await navigator.clipboard.writeText(window.location.href)
+
+    for (const child of children) {
+      const isHidden = child.hasAttribute('hidden')
+      if (isHidden) {
+        child.removeAttribute('hidden')
+      }
+      else {
+        child.setAttribute('hidden', 'true')
+      }
+    }
+
+    setTimeout(() => {
+      for (const child of children) {
+        const isHidden = child.hasAttribute('hidden')
+        if (isHidden) {
+          child.removeAttribute('hidden')
+        }
+        else {
+          child.setAttribute('hidden', 'true')
+        }
+      }
+    }, 2000)
+  }
+  catch (err) {
+    console.error('Failed to copy URL:', err)
+  }
+})
+
+function saveStateToURL() {
+  const inputText = inputEl.value
+
+  let substitutions = ''
+  const charEls = wrapper.querySelectorAll<HTMLElement>('[data-char]')
+  for (const el of charEls) {
+    const key = el.dataset.char
+    const input = el.querySelector('input') as HTMLInputElement
+    if (!key || !input || !input.value)
+      continue
+
+    substitutions += key
+    substitutions += input.value
+  }
+
+  const url = new URL(window.location.href)
+  url.searchParams.set('input', encodeURI(inputText))
+  url.searchParams.set('chars', encodeURI(substitutions))
+  window.history.replaceState({}, '', url)
+}
+
+function loadStateFromURL() {
+  const url = new URL(window.location.href)
+  const inputText = url.searchParams.has('input') ? decodeURIComponent(url.searchParams.get('input')!) : null
+
+  if (!inputText)
+    return
+
+  inputEl.value = inputText
+  inputEl.textContent = inputText
+  inputEl.dispatchEvent(new Event('input'))
+
+  const charsString = url.searchParams.has('chars') ? decodeURIComponent(url.searchParams.get('chars')!) : null
+  if (charsString) {
+    const chars: Record<string, string> = {}
+
+    for (let i = 0; i < charsString.length; i += 2) {
+      chars[charsString[i]] = charsString[i + 1]
+    }
+
+    setTimeout(() => {
+      for (const [char, value] of Object.entries(chars)) {
+        const el = wrapper.querySelector(`[data-char="${char}"]`) as HTMLElement
+        if (!el)
+          continue
+
+        const input = el.querySelector('input') as HTMLInputElement
+        if (!input)
+          continue
+
+        input.value = value
+      }
+      updateOutput()
+    }, 0)
+  }
+}
+
+loadStateFromURL()
+inputEl.dispatchEvent(new Event('input'))
 </script>
