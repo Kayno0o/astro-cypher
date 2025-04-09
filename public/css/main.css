@@ -1,0 +1,8 @@
+:root {
+  --color--dark: oklch(20% 0 0);
+  --color--light: oklch(90% 0 0);
+  --color--primary: oklch(75% 0.2 280);
+  --color--accent: oklch(70% 0.25 280);
+  --color--card: oklch(30.5% 0 0);
+  --color--error: oklch(80% 0.35 calc(280 - 180));
+}

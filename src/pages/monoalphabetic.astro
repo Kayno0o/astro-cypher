@@ -1,0 +1,221 @@
+---
+import Layout from '../layouts/Layout.astro'
+
+---
+<Layout title="Monoalphabetic">
+  <div class="grid gap-10">
+    <h1 class="h1">Monoalphabetic</h1>
+
+    <div class="grid card gap-4">
+      <h2 class="h2">Presets</h2>
+      <div class="flex items-center gap-4">
+        <button type="button" class="btn btn-preset" data-preset="1">01</button>
+        <button type="button" class="btn btn-preset" data-preset="2">02</button>
+        <button type="button" class="btn btn-preset" data-preset="3">03</button>
+        <button type="button" class="btn btn-preset" data-preset="4">04</button>
+      </div>
+    </div>
+
+    <div class="grid xl:grid-cols-2 gap-8">
+      <div class="form-input card">
+        <label class="label" for="textarea-input">Input</label>
+        <textarea id="textarea-input" class="input text-sm autoresize font-mono"></textarea>
+      </div>
+      <div class="form-output card">
+        <label class="label" for="textarea-output">Output</label>
+        <div id="textarea-output" class="input text-sm autoresize font-mono min-h-13 whitespace-pre-wrap"></div>
+      </div>
+    </div>
+
+    <div id="char-input-wrapper" class="flex flex-wrap gap-4 card">
+    </div>
+  </div>
+
+  <template id="char-input">
+    <div data-char="[char]">
+      <div class="flex items-center justify-between">
+        <p class="text-lg label font-bold text-primary">[char]</p>
+        <p class="text-slate">×<span data-replace="count">[count]</span></p>
+      </div>
+      <input class="input w-16" data-maxlength="1" autocomplete="off">
+    </div>
+  </template>
+</Layout>
+
+<script>
+const data: Record<string, string> = {
+  1: `
+THSWQD THZ RBXP GWXP HG XL ZWRNBRHK UTPQ WQ KBQZBQ,
+W THZ SWRWGPZ GTP IOWGWRT XMRPMX, HQZ XHZP RPHOFT
+HXBQD GTP IBBVR HQZ XHNR WQ GTP KWIOHOL OPDHOZWQD
+GOHQRLKSHQWH; WG THZ RGOMFV XP GTHG RBXP ABOPVQBUKPZDP
+BA GTP FBMQGOL FBMKZ THOZKL AHWK GB THSP RBXP WXNBOGHQFP
+WQ ZPHKWQD UWGT H QBIKPXHQ BA GTHG FBMQGOL.
+
+GOHQRLKSHQWH
+`,
+  2: `
+LGGK VHZXJ RP VJJCEVO CK ZMX MGEXO C SCLDGEXJXS
+LGRX IVIXJL CK ZMX IGDQXZ GH ZMX SJXLL UMCDM C MVS
+ZVQXK HJGR PGBJ OVWGJVZGJP. VZ HCJLZ C MVS
+KXNOXDZXS ZMXR, WBZ KGU ZMVZ C UVL VWOX ZG SXDCIMXJ
+ZMX DMVJVDZXJL CK UMCDM ZMXP UXJX UJCZZXK, C
+WXNVK ZG LZBSP ZMXR UCZM SCOCNXKDX.
+
+OVWGJVZGJP
+`,
+  3: `
+UOIKI -Y IVIK . =/.N O!NIVIK -L UOI MIYU /.-| !=
+OTZ.L ♢/.LY .L| UOI ZTK|IKIKY != ▣!OL !♢ILYO.N NIKI
+LIVIK U! KI▫I-VI UOI !K.LAI ♢-♢Y NO-▫O N!T/| YO!N UOIZ
+UO.U .L!UOIK .U ▫TLL-LA .L| .Y KIY!/TUI .Y UOIZYI/VIY
+N.Y T♢!L UOI-K UK.▫H VIK: /!LA .L| VIK: YIVIKI NIKI UOI
+I]T-L!▫U-./ A./IY UO.U :I.K NI N.-UI| /!LA =!K LINY
+!= UOI /!LI YU.K != Y.V.LL.O MTU L!LI IVIK KI.▫OI| TY
+
+/!LI YU.K
+`,
+  4: `
+AJLPNYRJZJFLZYASGSKQGSMME
+JKEJPFSVLPJLKKEJELNNSPZKY
+NNYGNSGASGYZJGAKEYZYGASVW
+NJKSWSKECNLUJZKEJZEYCYZWS
+VOEKLGAHYKKJAZEJNYJZLKLGU
+ESPPJLAFHSPZHLFSVGJRJPYTL
+OYGJALZMJJKJPZUESSGJPLUEY
+NATYOEKZLYNEJPKMSEVGAPJAK
+SGZGLTJEYZCLGYSNL
+
+EYZCLGYSNL
+`,
+}
+
+function isInputEvent(event: Event): event is InputEvent {
+  return 'data' in event
+}
+
+function maxLengthInput(event: Event) {
+  if (!isInputEvent(event) || !event.data)
+    return
+
+  const target = event.target as HTMLInputElement | HTMLTextAreaElement
+  target.value = event.data
+}
+
+const maxlengthEl = document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[data-maxlength], textarea[data-maxlength]')
+for (const el of maxlengthEl) {
+  el.addEventListener('input', maxLengthInput)
+}
+
+const wrapper = document.getElementById('char-input-wrapper') as HTMLDivElement
+const template = document.getElementById('char-input') as HTMLTemplateElement
+
+const outputEl = document.getElementById('textarea-output') as HTMLTextAreaElement
+
+const inputEl = document.getElementById('textarea-input') as HTMLTextAreaElement
+inputEl.addEventListener('input', () => {
+  const chars = inputEl.value.split('').filter(fChar => fChar !== '\n' && fChar !== ' ')
+  const uniqueChars = [...new Set(chars)].sort()
+
+  const existingEls = wrapper.querySelectorAll<HTMLElement>('[data-char]')
+  for (const el of existingEls) {
+    if (!chars.includes(el.dataset.char ?? '')) {
+      el.remove()
+    }
+  }
+
+  for (const char of uniqueChars) {
+    const existing = wrapper.querySelector(`[data-char="${char}"]`) as HTMLElement | null
+    const count = chars.filter(fChar => fChar === char).length
+
+    if (existing) {
+      const countEl = existing.querySelector('[data-replace="count"]')
+      if (!countEl)
+        continue
+
+      countEl.textContent = String(count)
+      continue
+    }
+
+    const el = template.content.firstElementChild?.cloneNode(true)
+    if (!(el instanceof HTMLElement))
+      continue
+
+    el.innerHTML = el.innerHTML
+      .replaceAll('[char]', char)
+      .replaceAll('[count]', String(count))
+
+    el.dataset.char = char
+    wrapper.appendChild(el)
+
+    const input = el.querySelector('input')
+    if (!input)
+      continue
+
+    input.addEventListener('input', (event) => {
+      maxLengthInput(event)
+      updateOutput()
+    })
+  }
+
+  updateOutput()
+})
+
+function updateOutput() {
+  const data: Record<string, string> = {}
+
+  const charEls = wrapper.querySelectorAll<HTMLElement>('[data-char]')
+  for (const el of charEls) {
+    const key = el.dataset.char
+    const input = el.querySelector('input') as HTMLInputElement
+    if (!key || !input)
+      continue
+
+    data[key] = input.value
+  }
+
+  let output = ''
+  for (const c of inputEl.value) {
+    if (c === '\n' || c === ' ') {
+      output += c
+      continue
+    }
+
+    if (data[c]) {
+      output += `<span>${data[c]}</span>`
+      continue
+    }
+
+    output += `<span class="text-red-7">${c}</span>`
+  }
+
+  outputEl.innerHTML = output
+  outputEl.dispatchEvent(new Event('input'))
+}
+
+const textareas = document.querySelectorAll<HTMLTextAreaElement>('textarea.autoresize')
+for (const textarea of textareas) {
+  textarea.addEventListener('input', () => {
+    textarea.style.height = 'auto'
+    textarea.style.height = `${textarea.scrollHeight}px`
+  })
+
+  textarea.dispatchEvent(new Event('input'))
+}
+
+const presetButtons = document.querySelectorAll<HTMLButtonElement>('button.btn-preset')
+for (const btn of presetButtons) {
+  btn.addEventListener('click', () => {
+    if (!btn.dataset.preset || !(btn.dataset.preset in data))
+      return
+
+    wrapper.innerHTML = ''
+
+    const item = data[btn.dataset.preset].trim()
+    inputEl.textContent = item
+    inputEl.value = item
+
+    inputEl.dispatchEvent(new Event('input'))
+  })
+}
+</script>
